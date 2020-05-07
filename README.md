@@ -1,2 +1,2 @@
-# ITI_WCE_40
-this is just for test configuration 
+# GitHubLab
+this is just for test the Git Lab
