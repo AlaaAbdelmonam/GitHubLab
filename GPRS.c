@@ -1,5 +1,5 @@
 /*
- * GSM.c
+ * GPRS.c
  *
  *  Created on: Jun 28, 2020
  *      Author: Alaa
@@ -13,8 +13,8 @@
 #include <stdbool.h>
 #include "Std_Types.h"
 #include "Utils.h"
-#include "USART_Interrupt.h"
-#include "GSM.h"
+#include "USART.h"
+#include "GPRS.h"
 #include "LCD.h"
 
 char Mobile_no[14];
@@ -22,7 +22,7 @@ char message_received[60];
 int position = 0;
 
 
-void GSM_Begin()
+void GPRS_Begin()
 {
 	SETBIT(PORTD, 2);
 	while(1)
@@ -36,7 +36,7 @@ void GSM_Begin()
 		//AT+IPR=0
 		if(strstr(buff,"OK\r\n"))
 				{
-					GSM_Response();
+					GPRS_Response();
 					memset(buff,0,160);
 					LCD_String("OK");
 					break;
@@ -48,12 +48,12 @@ void GSM_Begin()
 		}
 	_delay_ms(1000);
 	LCD_Clear();
-	USART_SendString("AT+CNMP=13\r\n");        //to set GSM mode
+	USART_SendString("AT+CNMP=13\r\n");        //to set GPRS mode
 	_delay_ms(200);
 	LCD_String_xy(1,0,"Text Mode");
 	LCD_Command(0xc0);
 	USART_SendString("AT+CMGF=1\r\n");        /* select message format as text */
-	GSM_Response();
+	GPRS_Response();
 	_delay_ms(1000);
 	CLRBIT(PORTD, 2) ;
 }
@@ -90,7 +90,7 @@ void GSM_Send_Msg(char *num ,char *sms)
 
 
 
-void GSM_Response()
+void GPRS_Response()
 {
 	unsigned int timeout=0;
 	int CRLF_Found=0;
@@ -115,7 +115,7 @@ void GSM_Response()
 					{
 						if(CRLF_Found++==2)				/* search for \r\n in string */
 						{
-							GSM_Response_Display();		/* display response */
+							GPRS_Response_Display();		/* display response */
 							return;
 						}
 					}
@@ -132,7 +132,7 @@ void GSM_Response()
 	status_flag=0;
 }
 
-void GSM_Response_Display()
+void GPRS_Response_Display()
 {
 	buffer_pointer = 0;
 	int lcd_pointer = 0;
@@ -160,7 +160,7 @@ void GSM_Response_Display()
 	memset(buff,0,strlen(buff));
 }
 
-void GSM_Msg_Read(int position)
+void GPRS_Msg_Read(int position)
 {
 	char read_cmd[10];
 	sprintf(read_cmd,"AT+CMGR=%d\r",position);
@@ -168,7 +168,7 @@ void GSM_Msg_Read(int position)
 	GSM_Msg_Display();									/* display message */
 }
 
-void GSM_Msg_Display()
+void GPRS_Msg_Display()
 {
 	_delay_ms(500);
 	if(!(strstr(buff,"+CMGR")))                         /*check for +CMGR response */
